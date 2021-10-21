@@ -27,13 +27,9 @@ public class ModelPumpkinCat extends EntityModel<PumpkinCatEntity> {
 	// This layer location should be baked with EntityRendererProvider.Context in the entity renderer and passed into this model's constructor
 	public static final ModelLayerLocation LAYER_LOCATION = new ModelLayerLocation(new ResourceLocation(PumpkinCat.MODID, "pumpkin_cat"), "main");
 	private final ModelPart body;
-	private final ModelPart wing_right_r1;
-	private final ModelPart wing_left_r1;
 
 	public ModelPumpkinCat(ModelPart root) {
 		this.body = root.getChild("body");
-		this.wing_left_r1 = root.getChild("wing_left_r1");
-		this.wing_right_r1 = root.getChild("wing_right_r1");
 		
 	}
 
@@ -74,26 +70,7 @@ public class ModelPumpkinCat extends EntityModel<PumpkinCatEntity> {
 	@Override
 	public void setupAnim(PumpkinCatEntity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
 
-		this.wing_left_r1.xRot = 0.0F;
-		this.wing_right_r1.xRot = 0.0F;
-
-	      boolean flag = entity.isOnGround() && entity.getDeltaMovement().lengthSqr() < 1.0E-7D;
-	      if (flag) {
-	         this.wing_right_r1.yRot = -0.2618F;
-	         this.wing_right_r1.zRot = 0.0F;
-	         this.wing_left_r1.xRot = 0.0F;
-	         this.wing_left_r1.yRot = 0.2618F;
-	         this.wing_left_r1.zRot = 0.0F;
-	         
-	      } else {
-	         float f = ageInTicks * 120.32113F * ((float)Math.PI / 180F);
-	         this.wing_right_r1.yRot = 0.0F;
-	         this.wing_right_r1.zRot = Mth.cos(f) * (float)Math.PI * 0.15F;
-	         this.wing_left_r1.xRot = this.wing_right_r1.xRot;
-	         this.wing_left_r1.yRot = this.wing_right_r1.yRot;
-	         this.wing_left_r1.zRot = -this.wing_right_r1.zRot;
-	         
-	      }
+		
 	}
 
 	@Override

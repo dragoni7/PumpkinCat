@@ -1,7 +1,6 @@
 package com.github.dragoni7.pumpkincat.common.entities;
 
 import java.util.EnumSet;
-
 import javax.annotation.Nullable;
 
 import net.minecraft.core.BlockPos;
@@ -34,9 +33,23 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.pathfinder.BlockPathTypes;
 import net.minecraft.world.phys.Vec3;
+import software.bernie.geckolib3.core.IAnimatable;
+import software.bernie.geckolib3.core.PlayState;
+import software.bernie.geckolib3.core.builder.AnimationBuilder;
+import software.bernie.geckolib3.core.controller.AnimationController;
+import software.bernie.geckolib3.core.event.predicate.AnimationEvent;
+import software.bernie.geckolib3.core.manager.AnimationData;
+import software.bernie.geckolib3.core.manager.AnimationFactory;
 
 
-public class PumpkinCatEntity extends Animal implements FlyingAnimal{
+public class PumpkinCatEntity extends Animal implements IAnimatable, FlyingAnimal{
+	
+	private AnimationFactory factory = new AnimationFactory(this);
+	
+	private <E extends IAnimatable> PlayState predicate(AnimationEvent<E> event) {
+		event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.model.flap", true));
+		return PlayState.CONTINUE;
+	}
 
 	public PumpkinCatEntity(EntityType<? extends PumpkinCatEntity> type, Level worldIn) {
 		super(type, worldIn);
@@ -73,13 +86,15 @@ public class PumpkinCatEntity extends Animal implements FlyingAnimal{
 	    		  .add(Attributes.FOLLOW_RANGE, 48.0D);
 	   }
 	
+	@Override
 	protected void registerGoals() {
 		this.goalSelector.addGoal(1, new BreedGoal(this, 1.0D));
         this.goalSelector.addGoal(2, new WanderGoal());
         this.goalSelector.addGoal(3, new FloatGoal(this));
-        this.goalSelector.addGoal(4, new LookAtPlayerGoal(this, Player.class, 10.0F));
+        this.goalSelector.addGoal(4, new LookAtPlayerGoal(this, Player.class, 6.0F));
         this.goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, 0.8D, 1.0000001E-5F));
         this.goalSelector.addGoal(6, new PanicGoal(this, 2.0D));
+        super.registerGoals();
 	}
 	
 	protected PathNavigation createNavigation(Level worldIn) {
@@ -110,7 +125,6 @@ public class PumpkinCatEntity extends Animal implements FlyingAnimal{
         return true;
     }
 
-	@Override
 	public boolean isFlying() {
 		return true;
 	}
@@ -151,6 +165,18 @@ public class PumpkinCatEntity extends Animal implements FlyingAnimal{
 			
 			return vec32 != null ? vec32 : AirAndWaterRandomPos.getPos(PumpkinCatEntity.this, 8, 4, -2, vec3.x, vec3.z, (double)((float)Math.PI / 2F));
 		}
+	}
+
+	@Override
+	public void registerControllers(AnimationData data) {
+		data.addAnimationController(new AnimationController(this, "controller", 0, this::predicate));
+		
+	}
+
+	@Override
+	public AnimationFactory getFactory() {
+		
+		return this.factory;
 	}
 
 	

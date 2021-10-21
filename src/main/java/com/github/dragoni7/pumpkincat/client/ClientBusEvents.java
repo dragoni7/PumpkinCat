@@ -12,7 +12,7 @@ public class ClientBusEvents {
 		public static void subscribeClientEvents(IEventBus modBus, IEventBus forgeBus) {
 			
 			modBus.addListener(ClientBusEvents::registerEntityRenders);
-			modBus.addListener(ClientBusEvents::registerLayerDefinitions);
+			//modBus.addListener(ClientBusEvents::registerLayerDefinitions);
 		}
 
 	
@@ -21,7 +21,10 @@ public class ClientBusEvents {
 	}
 	
 	
-	public static void registerLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
-		event.registerLayerDefinition(ModelPumpkinCat.LAYER_LOCATION, ModelPumpkinCat::createBodyLayer);
-	}
+	/*
+	 * public static void
+	 * registerLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event)
+	 * { event.registerLayerDefinition(ModelPumpkinCat.LAYER_LOCATION,
+	 * ModelPumpkinCat::createBodyLayer); }
+	 */
 }
