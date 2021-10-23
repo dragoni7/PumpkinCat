@@ -21,7 +21,8 @@ import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.PanicGoal;
-import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
+import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
+import net.minecraft.world.entity.ai.goal.TemptGoal;
 import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.ai.util.AirAndWaterRandomPos;
@@ -29,6 +30,9 @@ import net.minecraft.world.entity.ai.util.HoverRandomPos;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.FlyingAnimal;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.pathfinder.BlockPathTypes;
@@ -43,6 +47,8 @@ import software.bernie.geckolib3.core.manager.AnimationFactory;
 
 
 public class PumpkinCatEntity extends Animal implements IAnimatable, FlyingAnimal{
+	
+	private static final Ingredient FOOD_ITEMS = Ingredient.of(Items.PUMPKIN_PIE);
 	
 	private AnimationFactory factory = new AnimationFactory(this);
 	
@@ -66,7 +72,7 @@ public class PumpkinCatEntity extends Animal implements IAnimatable, FlyingAnima
 	}
 	
 	public int getAmbientSoundInterval() {
-		return 60;
+		return 90;
 	}
 	
 	protected SoundEvent getHurtSound(DamageSource damageSourceIn) {
@@ -79,7 +85,7 @@ public class PumpkinCatEntity extends Animal implements IAnimatable, FlyingAnima
 	
 	public static AttributeSupplier.Builder customAttributes() {
 	      return Mob.createMobAttributes()
-	    		  .add(Attributes.MAX_HEALTH, 10.0D)
+	    		  .add(Attributes.MAX_HEALTH, 8.0D)
 	    		  .add(Attributes.FLYING_SPEED, (double)0.4F)
 	    		  .add(Attributes.MOVEMENT_SPEED, (double)0.2F)
 	    		  .add(Attributes.ATTACK_DAMAGE, 2.0D)
@@ -91,10 +97,11 @@ public class PumpkinCatEntity extends Animal implements IAnimatable, FlyingAnima
 		this.goalSelector.addGoal(1, new BreedGoal(this, 1.0D));
         this.goalSelector.addGoal(2, new WanderGoal());
         this.goalSelector.addGoal(3, new FloatGoal(this));
-        this.goalSelector.addGoal(4, new LookAtPlayerGoal(this, Player.class, 6.0F));
-        this.goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, 0.8D, 1.0000001E-5F));
-        this.goalSelector.addGoal(6, new PanicGoal(this, 2.0D));
-        super.registerGoals();
+        this.goalSelector.addGoal(5, new PanicGoal(this, 1.25D));
+        this.goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 6.0F));
+        this.goalSelector.addGoal(7, new RandomLookAroundGoal(this));
+        this.goalSelector.addGoal(4, new TemptGoal(this, 1.2D, FOOD_ITEMS, false));
+        
 	}
 	
 	protected PathNavigation createNavigation(Level worldIn) {
@@ -104,13 +111,13 @@ public class PumpkinCatEntity extends Animal implements IAnimatable, FlyingAnima
             }
         };
         flyingpathnavigator.setCanOpenDoors(false);
-        flyingpathnavigator.setCanFloat(false);
+        flyingpathnavigator.setCanFloat(true);
         flyingpathnavigator.setCanPassDoors(true);
         return flyingpathnavigator;
     }
 	
 	protected float getStandingEyeHeight(Pose poseIn, EntityDimensions sizeIn) {
-        return this.isBaby() ? sizeIn.height * 0.5F : sizeIn.height * 0.5F;
+        return this.isBaby() ? sizeIn.height * 0.6F : sizeIn.height * 0.6F;
     }
 
     public boolean causeFallDamage(float distance, float damageMultiplier) {
@@ -133,6 +140,10 @@ public class PumpkinCatEntity extends Animal implements IAnimatable, FlyingAnima
 	public AgeableMob getBreedOffspring(ServerLevel p_146743_, AgeableMob p_146744_) {
 		return PumpkinCatEntity.this;
 	}
+	
+	public boolean isFood(ItemStack p_29508_) {
+	      return FOOD_ITEMS.test(p_29508_);
+	   }
 	
 	class WanderGoal extends Goal {
 		WanderGoal() {
@@ -169,7 +180,7 @@ public class PumpkinCatEntity extends Animal implements IAnimatable, FlyingAnima
 
 	@Override
 	public void registerControllers(AnimationData data) {
-		data.addAnimationController(new AnimationController(this, "controller", 0, this::predicate));
+		data.addAnimationController(new AnimationController<PumpkinCatEntity>(this, "controller", 0, this::predicate));
 		
 	}
 
