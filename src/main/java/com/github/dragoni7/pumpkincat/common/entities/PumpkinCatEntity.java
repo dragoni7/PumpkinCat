@@ -1,22 +1,39 @@
 package com.github.dragoni7.pumpkincat.common.entities;
 
 import java.util.EnumSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Random;
+
 import javax.annotation.Nullable;
 
+import com.google.common.base.Predicates;
+
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.FlyingMoveControl;
-import net.minecraft.world.entity.ai.goal.BreedGoal;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
@@ -29,14 +46,22 @@ import net.minecraft.world.entity.ai.util.AirAndWaterRandomPos;
 import net.minecraft.world.entity.ai.util.HoverRandomPos;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.FlyingAnimal;
+import net.minecraft.world.entity.animal.PolarBear;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.Biomes;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.pathfinder.BlockPathTypes;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.fmllegacy.network.NetworkHooks;
 import software.bernie.geckolib3.core.IAnimatable;
 import software.bernie.geckolib3.core.PlayState;
 import software.bernie.geckolib3.core.builder.AnimationBuilder;
@@ -72,7 +97,7 @@ public class PumpkinCatEntity extends Animal implements IAnimatable, FlyingAnima
 	}
 	
 	public int getAmbientSoundInterval() {
-		return 90;
+		return 900;
 	}
 	
 	protected SoundEvent getHurtSound(DamageSource damageSourceIn) {
@@ -83,24 +108,29 @@ public class PumpkinCatEntity extends Animal implements IAnimatable, FlyingAnima
 		return SoundEvents.CAT_DEATH;
 	}
 	
+//	public static boolean checkPumpkinCatSpawnRules(EntityType<PumpkinCatEntity> entity, LevelAccessor worldIn, MobSpawnType reason, BlockPos pos, Random randomIn) {
+//	      return worldIn.getRawBrightness(pos, 0) > 8 && worldIn.getBlockState(pos.below()).is(Blocks.GRASS_BLOCK);
+//	      
+//	   }
+	
 	public static AttributeSupplier.Builder customAttributes() {
 	      return Mob.createMobAttributes()
-	    		  .add(Attributes.MAX_HEALTH, 8.0D)
-	    		  .add(Attributes.FLYING_SPEED, (double)0.4F)
-	    		  .add(Attributes.MOVEMENT_SPEED, (double)0.2F)
-	    		  .add(Attributes.ATTACK_DAMAGE, 2.0D)
+	    		  .add(Attributes.MAX_HEALTH, 10.0D)
+	    		  .add(Attributes.FLYING_SPEED, (double)1.0F)
+	    		  .add(Attributes.MOVEMENT_SPEED, (double)0.3F)
+	    		  .add(Attributes.ATTACK_DAMAGE, 3.0D)
 	    		  .add(Attributes.FOLLOW_RANGE, 48.0D);
 	   }
 	
 	@Override
 	protected void registerGoals() {
-		this.goalSelector.addGoal(1, new BreedGoal(this, 1.0D));
         this.goalSelector.addGoal(2, new WanderGoal());
         this.goalSelector.addGoal(3, new FloatGoal(this));
-        this.goalSelector.addGoal(5, new PanicGoal(this, 1.25D));
-        this.goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 6.0F));
-        this.goalSelector.addGoal(7, new RandomLookAroundGoal(this));
         this.goalSelector.addGoal(4, new TemptGoal(this, 1.2D, FOOD_ITEMS, false));
+        this.goalSelector.addGoal(5, new PanicGoal(this, 1.4D));
+        this.goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 8.0F));
+        this.goalSelector.addGoal(7, new RandomLookAroundGoal(this));
+        
         
 	}
 	
@@ -135,15 +165,68 @@ public class PumpkinCatEntity extends Animal implements IAnimatable, FlyingAnima
 	public boolean isFlying() {
 		return true;
 	}
+	
+	public float getBrightness() {
+		return 1.0F;
+	}
+	
+	public boolean isNoGravity() {
+		return true;
+	}
+	
+	private AABB catArea() {
+		return this.getBoundingBox().inflate(15,32,15);
+	}
 
 	@Override
 	public AgeableMob getBreedOffspring(ServerLevel p_146743_, AgeableMob p_146744_) {
 		return PumpkinCatEntity.this;
 	}
 	
-	public boolean isFood(ItemStack p_29508_) {
-	      return FOOD_ITEMS.test(p_29508_);
+	public boolean isFood(ItemStack itemstack) {
+	      return FOOD_ITEMS.test(itemstack);
 	   }
+	
+	public InteractionResult mobInteract(Player player, InteractionHand hand) {
+		ItemStack itemstack = player.getItemInHand(hand);
+	
+		if(itemstack.is(Items.PUMPKIN_PIE)) {
+			
+			List<Player> playerList = this.level.getEntitiesOfClass(Player.class, this.catArea(), Predicates.alwaysTrue());
+			for (Player e : playerList) {
+				if (!e.hasEffect(MobEffects.NIGHT_VISION) && !e.hasEffect(MobEffects.NIGHT_VISION)) {
+					e.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 4800, 0));
+					
+					if(!player.isCreative()) {
+		                itemstack.shrink(1);
+		            }
+					
+					if(this.level.isClientSide) {
+						for(int i = 0; i < 7; ++i) {
+					         double d0 = this.random.nextGaussian() * 0.02D;
+					         double d1 = this.random.nextGaussian() * 0.02D;
+					         double d2 = this.random.nextGaussian() * 0.02D;
+					         this.level.addParticle(ParticleTypes.GLOW, this.getRandomX(1.0D), this.getRandomY() + 0.5D, this.getRandomZ(1.0D), d0, d1, d2);
+					      }
+						
+					}
+				}
+			}
+			
+			
+			
+			return InteractionResult.SUCCESS;
+		}
+		
+		else return InteractionResult.FAIL;
+	}
+	
+//	@Nullable
+//	public SpawnGroupData finalizeSpawn(ServerLevelAccessor worldIn, DifficultyInstance difficultyIn, MobSpawnType reason, @Nullable SpawnGroupData spawnDataIn, @Nullable CompoundTag dataTag) {
+//	    
+//	      return super.finalizeSpawn(worldIn, difficultyIn, reason, spawnDataIn, dataTag);
+//	   }
+
 	
 	class WanderGoal extends Goal {
 		WanderGoal() {
@@ -153,7 +236,7 @@ public class PumpkinCatEntity extends Animal implements IAnimatable, FlyingAnima
 		
 		public boolean canUse() {
 			
-			return PumpkinCatEntity.this.navigation.isDone() &&  PumpkinCatEntity.this.random.nextInt(3) == 0;
+			return PumpkinCatEntity.this.navigation.isDone() &&  PumpkinCatEntity.this.random.nextInt(50) == 0;
 		}
 		
 		public boolean canContinuToUse() {
@@ -190,8 +273,9 @@ public class PumpkinCatEntity extends Animal implements IAnimatable, FlyingAnima
 		return this.factory;
 	}
 
-	
-	 
-
+	@Override
+	public Packet<?> getAddEntityPacket() {
+		return NetworkHooks.getEntitySpawningPacket(this);
+	}
 }
 

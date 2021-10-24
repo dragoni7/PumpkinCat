@@ -11,9 +11,8 @@ import net.minecraftforge.registries.ForgeRegistries;
 public class RegisterEntities {
 
 	public static final DeferredRegister<EntityType<?>> ENTITY_TYPES = DeferredRegister.create(ForgeRegistries.ENTITIES, PumpkinCat.MODID);
-	
-	
-	  public static final RegistryObject<EntityType<PumpkinCatEntity>> PUMPKIN_CAT = createPumpkinCatEntity("pumpkin_cat", PumpkinCatEntity::new);
+
+	public static final RegistryObject<EntityType<PumpkinCatEntity>> PUMPKIN_CAT = createPumpkinCatEntity("pumpkin_cat", PumpkinCatEntity::new);
 	  
 	  public static <E extends PumpkinCatEntity> RegistryObject<EntityType<E>> createPumpkinCatEntity(String name, EntityType.EntityFactory<E> supplier) {
 	 

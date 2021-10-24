@@ -23,14 +23,13 @@ public class PumpkinCat
     private static final Logger LOGGER = LogManager.getLogger();
 
     public PumpkinCat() {
-    	
-    	GeckoLib.initialize();
 
     	IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
     	IEventBus forgeBus = MinecraftForge.EVENT_BUS;
     	
         RegisterEntities.ENTITY_TYPES.register(modBus);
         MinecraftForge.EVENT_BUS.register(this);
+        GeckoLib.initialize();
         
         if (FMLEnvironment.dist == Dist.CLIENT) {
         	ClientBusEvents.subscribeClientEvents(modBus, forgeBus);

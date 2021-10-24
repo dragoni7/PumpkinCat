@@ -9,8 +9,6 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.Mth;
-import net.minecraft.world.entity.GlowSquid;
 import software.bernie.geckolib3.renderers.geo.GeoEntityRenderer;
 
 
@@ -27,7 +25,8 @@ public class PumpkinCatRender extends GeoEntityRenderer<PumpkinCatEntity> {
 		return RenderType.entityTranslucent(getTextureLocation(animatable));
 	}
 	
-	protected int getBlockLightLevel() {
-		return 10;
-	   }
+	protected int getBlockLightLevel(PumpkinCatEntity entity, BlockPos partialTicks) {
+		return 15;
+	}
+
 }
