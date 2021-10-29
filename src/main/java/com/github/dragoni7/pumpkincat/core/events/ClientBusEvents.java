@@ -1,4 +1,4 @@
-package com.github.dragoni7.pumpkincat.client;
+package com.github.dragoni7.pumpkincat.core.events;
 
 import com.github.dragoni7.pumpkincat.init.RegisterEntities;
 import com.github.dragoni7.pumpkincat.client.entity.render.PumpkinCatRender;

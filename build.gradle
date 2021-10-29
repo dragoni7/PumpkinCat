@@ -13,9 +13,9 @@ apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 
-version = '1.0'
-group = 'com.github.dragoni7' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
-archivesBaseName = 'pumpkincat'
+version = '1.0.0'
+group = 'com.github.dragoni7.pumpkincat' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+archivesBaseName = 'PumpkinCat'
 
 // Mojang ships Java 16 to end users in 1.17+ instead of Java 8 in 1.16 or lower, so your mod should target Java 16.
 java.toolchain.languageVersion = JavaLanguageVersion.of(16)
@@ -56,7 +56,7 @@ minecraft {
             property 'forge.logging.console.level', 'debug'
 
             mods {
-                examplemod {
+                pumpkincat {
                     source sourceSets.main
                 }
             }
@@ -156,7 +156,7 @@ jar {
                 "Specification-Vendor"    : "dragoni7",
                 "Specification-Version"   : "1", // We are version 1 of ourselves
                 "Implementation-Title"    : project.name,
-                "Implementation-Version"  : project.jar.archiveVersion,
+                "Implementation-Version"  : "${version}",
                 "Implementation-Vendor"   : "dragoni7",
                 "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
         ])

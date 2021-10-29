@@ -18,6 +18,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -97,7 +98,7 @@ public class PumpkinCatEntity extends Animal implements IAnimatable, FlyingAnima
 	}
 	
 	public int getAmbientSoundInterval() {
-		return 900;
+		return 600;
 	}
 	
 	protected SoundEvent getHurtSound(DamageSource damageSourceIn) {
@@ -108,14 +109,14 @@ public class PumpkinCatEntity extends Animal implements IAnimatable, FlyingAnima
 		return SoundEvents.CAT_DEATH;
 	}
 	
-//	public static boolean checkPumpkinCatSpawnRules(EntityType<PumpkinCatEntity> entity, LevelAccessor worldIn, MobSpawnType reason, BlockPos pos, Random randomIn) {
-//	      return worldIn.getRawBrightness(pos, 0) > 8 && worldIn.getBlockState(pos.below()).is(Blocks.GRASS_BLOCK);
-//	      
-//	   }
+	public static boolean checkPumpkinCatSpawnRules(EntityType<PumpkinCatEntity> entity, LevelAccessor worldIn, MobSpawnType reason, BlockPos pos, Random randomIn) {
+		return worldIn.getBlockState(pos.below()).is(Blocks.GRASS_BLOCK);
+	      
+	   }
 	
 	public static AttributeSupplier.Builder customAttributes() {
 	      return Mob.createMobAttributes()
-	    		  .add(Attributes.MAX_HEALTH, 10.0D)
+	    		  .add(Attributes.MAX_HEALTH, 8.0D)
 	    		  .add(Attributes.FLYING_SPEED, (double)1.0F)
 	    		  .add(Attributes.MOVEMENT_SPEED, (double)0.3F)
 	    		  .add(Attributes.ATTACK_DAMAGE, 3.0D)
@@ -221,13 +222,6 @@ public class PumpkinCatEntity extends Animal implements IAnimatable, FlyingAnima
 		else return InteractionResult.FAIL;
 	}
 	
-//	@Nullable
-//	public SpawnGroupData finalizeSpawn(ServerLevelAccessor worldIn, DifficultyInstance difficultyIn, MobSpawnType reason, @Nullable SpawnGroupData spawnDataIn, @Nullable CompoundTag dataTag) {
-//	    
-//	      return super.finalizeSpawn(worldIn, difficultyIn, reason, spawnDataIn, dataTag);
-//	   }
-
-	
 	class WanderGoal extends Goal {
 		WanderGoal() {
 			this.setFlags(EnumSet.of(Goal.Flag.MOVE));
@@ -260,6 +254,7 @@ public class PumpkinCatEntity extends Animal implements IAnimatable, FlyingAnima
 			return vec32 != null ? vec32 : AirAndWaterRandomPos.getPos(PumpkinCatEntity.this, 8, 4, -2, vec3.x, vec3.z, (double)((float)Math.PI / 2F));
 		}
 	}
+	
 
 	@Override
 	public void registerControllers(AnimationData data) {
@@ -272,6 +267,7 @@ public class PumpkinCatEntity extends Animal implements IAnimatable, FlyingAnima
 		
 		return this.factory;
 	}
+
 
 	@Override
 	public Packet<?> getAddEntityPacket() {
